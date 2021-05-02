@@ -143,6 +143,7 @@
     <ClInclude Include="Obeder.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Obeder.cpp" />
     <ClCompile Include="parsing.cpp" />
   </ItemGroup>
