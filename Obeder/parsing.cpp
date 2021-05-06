@@ -6,7 +6,6 @@ std::vector<std::string> split_string(const std::string& str, const std::string 
 	std::string word;
 	std::vector<std::string> words = {};
 	size_t pos = 0;
-	double curr_value;
 	for (size_t num = 0;;) {
 		pos = str.find_first_not_of(split_symbols, pos);
 		if (pos == std::string::npos) { break; }

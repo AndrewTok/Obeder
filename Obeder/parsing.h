@@ -5,7 +5,7 @@
 #include <sstream>
 
 
-#include "Obeder.h"
+#include "Obeder.h" // нормально спроектировать класс
 
 std::vector<std::string> split_string(const std::string& str, const std::string split_symbols);
 

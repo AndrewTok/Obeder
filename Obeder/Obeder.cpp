@@ -21,7 +21,8 @@ bool Obeder::init(std::istream& input)
 		}
 		notes.insert(notes.end(), curr_note);
 	}
-	std::sort(notes.begin(), notes.end(), notes_ts_cmp);
+	std::sort(notes.begin(), notes.end(), [](const Note& lhs, const Note& rhs) {
+		return lhs.ts < rhs.ts; });
 	return true;
 }
 
@@ -46,14 +47,14 @@ void Obeder::print_recomendation(time_t begin, time_t end, std::ostream& output)
 		}
 		if (abs(curr_debtor->sum) > curr_creditor->sum)
 		{
-			output << curr_debtor->name << " -> " << curr_creditor->name << curr_creditor->sum << " копеек " << std::endl;
+			output << curr_debtor->name << " -> " << curr_creditor->name << " " << curr_creditor->sum << "  kopecks " << std::endl;
 			curr_debtor->sum += curr_creditor->sum;
 			curr_creditor->sum = 0;
-			creditor_index++;
+			creditor_index--;
 		}
 		else
 		{
-			output << curr_debtor->name << " -> " << curr_creditor->name << abs(curr_debtor->sum) << " копеек " << std::endl;
+			output << curr_debtor->name << " -> " << curr_creditor->name << " " << abs(curr_debtor->sum) << "  kopecks " << std::endl;
 			curr_creditor->sum += curr_debtor->sum;
 			curr_debtor->sum = 0;
 			debtor_index++;
@@ -78,7 +79,8 @@ void Obeder::construct_debt_arr(time_t begin, time_t end)
 			process_note(note);
 		}
 	}
-	std::sort(debt_arr.begin(), debt_arr.end(), mates_sum_cmp);
+	std::sort(debt_arr.begin(), debt_arr.end(), [](const Lunchmate& lhs, const Lunchmate& rhs) {
+		return lhs.sum < rhs.sum; });
 }
 
 bool Obeder::update_mate_sum_in_debt_arr(size_t mate_index, int new_sum)
@@ -91,9 +93,9 @@ bool Obeder::update_mate_sum_in_debt_arr(size_t mate_index, int new_sum)
 	return true;
 }
 
-void Obeder::process_note(Note note)
+void Obeder::process_note(Note& note)
 {
-	std::map<std::string&, size_t> name_index_table;
+	std::map<std::string, size_t> name_index_table;
 	size_t index;
 	Lunchmate mate;
 	if (name_index_table.find(note.name) != name_index_table.end())
@@ -112,20 +114,12 @@ void Obeder::process_note(Note note)
 	}
 }
 
-bool Obeder::mates_sum_cmp(Lunchmate& greater, Lunchmate less)
+bool Obeder::mates_sum_cmp(const Lunchmate &lhs, const Lunchmate &rhs)
 {
-	if (greater.sum > less.sum)
-	{
-		return true;
-	}
-	return false;
+	return lhs.sum > rhs.sum;
 }
 
-bool Obeder::notes_ts_cmp(Note& greater, Note& less)
+bool Obeder::notes_ts_cmp(const Note &lhs, const Note &rhs)
 {
-	if (greater.ts > less.ts)
-	{
-		return true;
-	}
-	return false;
+	return lhs.ts > rhs.ts;
 }
