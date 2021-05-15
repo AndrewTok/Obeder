@@ -1,4 +1,6 @@
 #include "Obeder.h"
+#include "data_proccesing.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -11,9 +13,14 @@ int main()
 
 	Obeder ob;
 
-	ob.init(inp);
+	map<time_t, Operation> oper_map = get_operation_map(inp);
 
-	ob.print_recomendation(0, 30, out);
+	Recomendation recom = ob.get_recomendation(oper_map, 0, 35);
+
+	for (auto& rec : recom.recom_arr)
+	{
+		out << rec.debtor_name << " -> " << rec.creditor_name << " " << rec.debt_sum << "  kopecks " << std::endl;
+	}
 
 	cout << out.str() << endl;
 	

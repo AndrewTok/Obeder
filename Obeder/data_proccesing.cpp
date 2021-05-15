@@ -1,4 +1,4 @@
-#include "parsing.h"
+#include "data_proccesing.h"
 
 
 std::vector<std::string> split_string(const std::string& str, const std::string split_symbols)
@@ -27,6 +27,29 @@ Note convert_line(const std::string& line)
 	note.name = words[1];
 	note.sum = stol(words[2]);
 	return note;
+}
+
+std::map<time_t, Operation> get_operation_map(std::istream& input)
+{
+	std::string line;
+	//std::vector<std::string> words_in_line;
+	std::map<time_t, Operation> oper_map;
+	Operation curr_oper;
+	Note curr_note;
+	while (std::getline(input, line))
+	{
+		try
+		{
+			curr_note = convert_line(line);
+		}
+		catch (std::exception& excpt)
+		{
+			return std::map<time_t, Operation>();
+		}
+		curr_oper = { curr_note.name, curr_note.sum };
+		oper_map[curr_note.ts] = curr_oper;
+	}
+	return oper_map;
 }
 
 time_t convert_str_to_time(const std::string& str)

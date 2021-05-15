@@ -139,13 +139,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="parsing.h" />
+    <ClInclude Include="data_proccesing.h" />
     <ClInclude Include="Obeder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Obeder.cpp" />
-    <ClCompile Include="parsing.cpp" />
+    <ClCompile Include="data_proccesing.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
