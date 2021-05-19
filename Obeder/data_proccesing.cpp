@@ -55,8 +55,7 @@ std::map<time_t, Operation> get_operation_map(std::istream& input)
 time_t convert_str_to_time(const std::string& str)
 {
 	time_t ts;
-	std::stringstream str_stream;
-	str_stream << str;
+	std::istringstream str_stream{ str };
 	str_stream >> ts;
 	return ts;
 }

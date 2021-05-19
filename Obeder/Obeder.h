@@ -78,7 +78,7 @@ public:
 	//bool init(std::istream& input); // to fullfill notes. not const because of getline using
 	//void print_recomendation(time_t begin, time_t end, std::ostream& output);
 
-protected:
+private:
 
 	struct Lunchmate // вспомогательная структура для массива должников и кредиторов
 	{

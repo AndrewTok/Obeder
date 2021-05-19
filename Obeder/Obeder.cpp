@@ -52,8 +52,10 @@ std::vector<Obeder::Lunchmate> Obeder::get_debt_arr(const std::map<time_t, Opera
 	{
 		return std::vector<Lunchmate>();
 	}
-	for (auto& note : notes)
+	for (auto& note : notes) //str binding
+
 	{
+		// auto&[ts, operation] = note
 		if (note.first > end)
 		{
 			return std::vector<Lunchmate>();
