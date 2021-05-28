@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <list>
 
+#include "Recomendation.h"
+#include "Operation.h"
 
 /*
 	Входные данные - это мапа записей, которые содержат информацию об операциях: время операции, имя того кто совершает операцию, сумма операции.
@@ -40,28 +42,6 @@
 */
 
 
-struct Operation
-{
-	std::string name; // person's id
-	int pay_sum; // the sum of the operation
-};
-
-struct Recomendation_cell
-{
-	std::string debtor_name; // user_id должника
-	std::string creditor_name; // user_id кредитора
-	int debt_sum; // сумма долга
-};
-
-struct Recomendation
-{
-	std::vector<Recomendation_cell> recom_arr; // массив содержащий информацию о том, кто, кому и сколько должен
-	void insert(Recomendation_cell recom)
-	{
-		recom_arr.insert(recom_arr.end(), recom);
-	}
-};
-
 class Obeder final
 {
 public:
@@ -69,14 +49,8 @@ public:
 	Obeder() = default;
 	~Obeder() = default;
 
-	Recomendation get_recomendation(const std::map<time_t, Operation>& notes, time_t begin, time_t end);
+	std::vector<Recomendation> get_recomendation(const std::map<time_t, Operation>& notes, time_t begin, time_t end);
 
-	/* 
-	далее идет старый интерфейс
-	*/
-
-	//bool init(std::istream& input); // to fullfill notes. not const because of getline using
-	//void print_recomendation(time_t begin, time_t end, std::ostream& output);
 
 private:
 
@@ -88,54 +62,28 @@ private:
 	};
 
 private:
-	struct debt_struct // вспомогательная промежуточная структура. Через нее создается массив должников и кредиторов. 
+	struct lunchmates_with_map // вспомогательная промежуточная структура. Через нее создается массив должников и кредиторов. 
 	{
-		std::vector<Lunchmate> debt_arr; // массив должников и кредиторов
-		std::unordered_map<std::string, size_t> name_index_table; 
-		// здесь хранится индекс Lunchmate'a в массиве debt_arr по имени. Нужен, чтобы ускорить вставку в debt_arr
-		void insert(const Operation& oprtn)
-		{
-			size_t index;
-			Lunchmate mate;
-			mate.name = oprtn.name;
-			mate.total_pay_sum = oprtn.pay_sum;
-			index = debt_arr.size();
-			debt_arr.insert(debt_arr.end(), mate);
-			name_index_table[mate.name] = index;
-		}
+		// define func in another file
+		void insert(const Operation& operation);
 
-		void update(const Operation& oprtn)
-		{
-			size_t index = name_index_table[oprtn.name];
-			debt_arr[index].total_pay_sum += oprtn.pay_sum;
-		}
+		void update(const Operation& operation);
+
+		void insert_or_update(const Operation& operation);
+
+		std::vector<Lunchmate> get_lunchmates() const;
+	private:
+		std::vector<Lunchmate> lunchmates; // массив должников и кредиторов was debt_arr
+		std::unordered_map<std::string, size_t> name_index_table;
+		// здесь хранится индекс Lunchmate'a в массиве debt_arr по имени. Нужен, чтобы ускорить вставку в debt_arr
 	};
 
-	std::vector<Lunchmate> get_debt_arr(const std::map<time_t, Operation>& notes, time_t begin, time_t end); // получить массив должников и кредиторов
+	std::vector<Lunchmate> get_lunchmates(const std::map<time_t, Operation>& parsed_file, time_t begin, time_t end); // получить массив должников и кредиторов
 
-	void process_operation(debt_struct& debts, const Operation& oprtn); // обработать очередную операцию во входных данных и отредактировать debt_arr (debts)
+	void process_operation(lunchmates_with_map& mapped_lunchmates, const Operation& operation); // обработать очередную операцию во входных данных и отредактировать debt_arr (debts)
 
-	/*
-	далее идет старый интерфейс
-	*/
+	Recomendation process_debtor_and_creditor(Lunchmate& debtor, size_t& debtor_index, Lunchmate& creditor, size_t& creditor_index);
 
-
-	//std::vector<Note> notes; // all notes from file
-	//std::vector<Lunchmate> debt_arr; // arr of debt for certain range sorted by sum
-
-	//void construct_debt_arr(time_t begin, time_t end);
-
-	//bool update_mate_sum_in_debt_arr(size_t mate_index, int new_sum); // when debt_arr is constructing sometimes we need to update mate's debt
-
-	//void process_note(Note& note); // use when debt_arr is constructing
-
-/*	void process_operation(std::vector<Lunchmate>& debt_arr, Operation& oprtn);*/ // обработать очередную операцию во входных данных и отредактировать debt_arr 
-
-	//int diff_mates_sum(Lunchmate& mate1, Lunchmate& mate2); // compares two sums and returns abs(difference)
-
-	//bool mates_sum_cmp(const Lunchmate& greater, const Lunchmate& less);
-
-	//bool notes_ts_cmp(const Note& greater, const Note& less);
 
 };
 

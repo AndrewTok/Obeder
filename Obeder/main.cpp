@@ -15,11 +15,11 @@ int main()
 
 	map<time_t, Operation> oper_map = get_operation_map(inp);
 
-	Recomendation recom = ob.get_recomendation(oper_map, 0, 35);
+	std::vector<Recomendation> recom = ob.get_recomendation(oper_map, 0, 35);
 
-	for (auto& rec : recom.recom_arr)
+	for (auto& rec : recom)
 	{
-		out << rec.debtor_name << " -> " << rec.creditor_name << " " << rec.debt_sum << "  kopecks " << std::endl;
+		out << rec.get_debtor_name() << " -> " << rec.get_creditor_name() << " " << rec.get_debt_sum() << "  kopecks " << std::endl;
 	}
 
 	cout << out.str() << endl;

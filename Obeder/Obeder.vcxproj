@@ -116,6 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,11 +142,15 @@
   <ItemGroup>
     <ClInclude Include="data_proccesing.h" />
     <ClInclude Include="Obeder.h" />
+    <ClInclude Include="Operation.h" />
+    <ClInclude Include="Recomendation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Obeder.cpp" />
     <ClCompile Include="data_proccesing.cpp" />
+    <ClCompile Include="Operation.cpp" />
+    <ClCompile Include="Recomendation.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

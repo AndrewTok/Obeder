@@ -7,16 +7,16 @@
 
 #include "Obeder.h"
 
-struct Note
+struct file_line
 {
 	time_t ts; // timestamp of the operation
 	std::string name; // person's id
 	int sum; // the sum of the operation
 };
 
-std::vector<std::string> split_string(const std::string& str, const std::string split_symbols);
+std::vector<std::string> split_string(const std::string& str, const std::string& split_symbols);
 
-Note convert_line(const std::string& line);
+file_line convert_line(const std::string& line);
 
 std::map<time_t, Operation> get_operation_map(std::istream& input);
 

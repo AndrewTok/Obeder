@@ -4,68 +4,52 @@
 
 
 
-Recomendation Obeder::get_recomendation(const std::map<time_t, Operation>& notes, time_t begin, time_t end)
+std::vector<Recomendation> Obeder::get_recomendation(const std::map<time_t, Operation>& notes, time_t begin, time_t end)
 {
-	Recomendation recom = {};
-	std::vector<Lunchmate> debt_arr = get_debt_arr(notes, begin, end);
-	Recomendation_cell curr_recom;
-	size_t debtor_index = 0, creditor_index = (debt_arr.size() - 1); // идем с двух концов отсортированного массива
-	Lunchmate* curr_debtor, * curr_creditor; // по указателю чтобы менять сам объект
-	if (debt_arr.empty())
+	std::vector<Recomendation> recomendations = {};
+	std::vector<Lunchmate> lunchmates = get_lunchmates(notes, begin, end);
+	if (lunchmates.empty())
 	{
-		return recom;
+		return std::vector<Recomendation>();
 	}
+	size_t debtor_index = 0, creditor_index = (lunchmates.size() - 1); // идем с двух концов отсортированного массива
 	while (debtor_index < creditor_index)
 	{
-		curr_debtor = &debt_arr[debtor_index];
-		curr_creditor = &debt_arr[creditor_index];
-		if (curr_debtor->total_pay_sum > 0 || curr_creditor->total_pay_sum < 0)
+		Lunchmate& curr_debtor = lunchmates[debtor_index];
+		Lunchmate& curr_creditor = lunchmates[creditor_index];
+		if (curr_debtor.total_pay_sum > 0 || curr_creditor.total_pay_sum < 0)
 		{
-			return Recomendation();
+			return std::vector<Recomendation>();
 		}
-		if (abs(curr_debtor->total_pay_sum) > curr_creditor->total_pay_sum)
-		{
-			curr_recom = { curr_debtor->name, curr_creditor->name, curr_creditor->total_pay_sum };
-			recom.insert(curr_recom);
-			curr_debtor->total_pay_sum += curr_creditor->total_pay_sum;
-			curr_creditor->total_pay_sum = 0;
-			creditor_index--;
-		}
-		else
-		{
-			curr_recom = { curr_debtor->name, curr_creditor->name, abs(curr_debtor->total_pay_sum) };
-			recom.insert(curr_recom);
-			curr_creditor->total_pay_sum += curr_debtor->total_pay_sum;
-			curr_debtor->total_pay_sum = 0;
-			debtor_index++;
-		}
+		Recomendation curr_recom = process_debtor_and_creditor(curr_debtor, debtor_index, curr_creditor, creditor_index);
+		recomendations.insert(recomendations.end(), curr_recom);
+
 	}
-	return recom;
+	return recomendations;
 }
 
 
 
-std::vector<Obeder::Lunchmate> Obeder::get_debt_arr(const std::map<time_t, Operation>& notes, time_t begin, time_t end)
+std::vector<Obeder::Lunchmate> Obeder::get_lunchmates(const std::map<time_t, Operation>& notes, time_t begin, time_t end)
 {
-	debt_struct debts = {};
+	lunchmates_with_map debts = {};
 	if (begin > end)
 	{
 		return std::vector<Lunchmate>();
 	}
-	for (auto& note : notes) //str binding
+	for (auto& [time_st, operation] : notes)
 
 	{
-		// auto&[ts, operation] = note
-		if (note.first > end)
+		if (time_st > end)
 		{
 			return std::vector<Lunchmate>();
 		}
-		if (note.first >= begin)
+		if (time_st >= begin)
 		{
-			process_operation(debts, note.second);
+			process_operation(debts, operation);
 		}
 	}
-	std::vector<Lunchmate> debt_arr = debts.debt_arr;
+	std::vector<Lunchmate> debt_arr = debts.get_lunchmates();
 	std::sort(debt_arr.begin(), debt_arr.end(), [](const Lunchmate& lhs, const Lunchmate& rhs) {
 		return lhs.total_pay_sum < rhs.total_pay_sum; });
 	return debt_arr;
@@ -73,154 +57,59 @@ std::vector<Obeder::Lunchmate> Obeder::get_debt_arr(const std::map<time_t, Opera
 
 
 
-void Obeder::process_operation(debt_struct& debts, const Operation& oprtn)
+void Obeder::process_operation(lunchmates_with_map& mapped_lunchmates, const Operation& operation)
 {
-	// если запись об участнике уже есть, то обновляем его итоговую сумму, иначе добавляем запись
-	if (debts.name_index_table.find(oprtn.name) != debts.name_index_table.end()) 
+	mapped_lunchmates.insert_or_update(operation);
+}
+
+Recomendation Obeder::process_debtor_and_creditor(Lunchmate& debtor, size_t& debtor_index, Lunchmate& creditor, size_t& creditor_index)
+{
+	int curr_pay_sum;
+	if (abs(debtor.total_pay_sum) > creditor.total_pay_sum)
 	{
-		debts.update(oprtn);
+		curr_pay_sum = creditor.total_pay_sum;
+		creditor_index--;
 	}
 	else
 	{
-		debts.insert(oprtn);
+		curr_pay_sum = abs(debtor.total_pay_sum);
+		debtor_index++;
+	}
+	Recomendation recom = { debtor.name, creditor.name, curr_pay_sum };
+	debtor.total_pay_sum += curr_pay_sum;
+	creditor.total_pay_sum -= curr_pay_sum;
+	return recom;
+}
+
+void Obeder::lunchmates_with_map::insert(const Operation& operation)
+{
+	size_t index;
+	Lunchmate mate = { operation.get_name(), operation.get_pay_sum() };
+	index = lunchmates.size();
+	lunchmates.insert(lunchmates.end(), mate);
+	name_index_table[mate.name] = index;
+}
+
+void Obeder::lunchmates_with_map::update(const Operation& operation)
+{
+	size_t index = name_index_table[operation.get_name()];
+	lunchmates[index].total_pay_sum += operation.get_pay_sum();
+}
+
+void Obeder::lunchmates_with_map::insert_or_update(const Operation& operation)
+{
+	if (name_index_table.find(operation.get_name()) != name_index_table.end())
+	{
+		update(operation);
+	}
+	else
+	{
+		insert(operation);
 	}
 }
 
-/*
+std::vector<Obeder::Lunchmate> Obeder::lunchmates_with_map::get_lunchmates() const
+{
+	return lunchmates;
+}
 
-далее идут старые реализации
-
-*/
-
-//bool Obeder::mates_sum_cmp(const Lunchmate &lhs, const Lunchmate &rhs)
-//{
-//	return lhs.sum > rhs.sum;
-//}
-//
-//bool Obeder::notes_ts_cmp(const Note &lhs, const Note &rhs)
-//{
-//	return lhs.ts > rhs.ts;
-//}
-
-//bool Obeder::init(std::istream& input)
-//{
-//	debt_arr.clear();
-//	std::string line;
-//	std::vector<std::string> words_in_line;
-//	Note curr_note;
-//	while (std::getline(input, line))
-//	{
-//		try
-//		{
-//			curr_note = convert_line(line);
-//		}
-//		catch (...)
-//		{
-//			notes.clear();
-//			return false;
-//		}
-//		notes.insert(notes.end(), curr_note);
-//	}
-//	std::sort(notes.begin(), notes.end(), [](const Note& lhs, const Note& rhs) {
-//		return lhs.ts < rhs.ts; });
-//	return true;
-//}
-//
-//void Obeder::print_recomendation(time_t begin, time_t end, std::ostream& output)
-//{
-//	construct_debt_arr(begin, end);
-//	if (debt_arr.empty())
-//	{
-//		output << "err" << std::endl;
-//		return;
-//	}
-//	size_t debtor_index = 0, creditor_index = (debt_arr.size() - 1); // идем с двух концов отсортированного массива
-//	Lunchmate* curr_debtor, *curr_creditor; // по указателю чтобы менять сам объект
-//	while (debtor_index < creditor_index)
-//	{
-//		curr_debtor = &debt_arr[debtor_index];
-//		curr_creditor = &debt_arr[creditor_index];
-//		if (curr_debtor->total_pay_sum > 0 || curr_creditor->total_pay_sum < 0)
-//		{
-//			output << "err" << std::endl;
-//			return;
-//		}
-//		if (abs(curr_debtor->total_pay_sum) > curr_creditor->total_pay_sum)
-//		{
-//			output << curr_debtor->name << " -> " << curr_creditor->name << " " << curr_creditor->total_pay_sum << "  kopecks " << std::endl;
-//			curr_debtor->total_pay_sum += curr_creditor->total_pay_sum;
-//			curr_creditor->total_pay_sum = 0;
-//			creditor_index--;
-//		}
-//		else
-//		{
-//			output << curr_debtor->name << " -> " << curr_creditor->name << " " << abs(curr_debtor->total_pay_sum) << "  kopecks " << std::endl;
-//			curr_creditor->total_pay_sum += curr_debtor->total_pay_sum;
-//			curr_debtor->total_pay_sum = 0;
-//			debtor_index++;
-//		}
-//	}
-//}
-
-//Recomendation Obeder::get_recomendation(std::vector<Note> notes, time_t begin, time_t end)
-//{
-//
-//
-//	return Recomendation();
-//}
-
-//void Obeder::construct_debt_arr(time_t begin, time_t end)
-//{
-//	if (begin > end)
-//	{
-//		return;
-//	}
-//	for (auto& note : notes)
-//	{
-//		if (note.ts > end)
-//		{
-//			return;
-//		}
-//		if (note.ts >= begin)
-//		{
-//			process_note(note);
-//		}
-//	}
-//	std::sort(debt_arr.begin(), debt_arr.end(), [](const Lunchmate& lhs, const Lunchmate& rhs) {
-//		return lhs.total_pay_sum < rhs.total_pay_sum; });
-//}
-
-//bool Obeder::update_mate_sum_in_debt_arr(size_t mate_index, int new_sum)
-//{
-//	if (mate_index >= debt_arr.size())
-//	{
-//		return false;
-//	}
-//	debt_arr[mate_index].sum = new_sum;
-//	return true;
-//}
-//
-//void Obeder::process_note(Note& note)
-//{
-//	std::map<std::string, size_t> name_index_table;
-//	size_t index;
-//	Lunchmate mate;
-//	if (name_index_table.find(note.name) != name_index_table.end())
-//	{
-//		index = name_index_table[note.name];
-//		mate = debt_arr[index];
-//		mate.sum += note.sum;
-//	}
-//	else
-//	{
-//		mate.name = note.name;
-//		mate.sum = note.sum;
-//		index = debt_arr.size();
-//		debt_arr.insert(debt_arr.end(), mate);
-//		name_index_table[mate.name] = index;
-//	}
-//}
-
-//void Obeder::process_operation(std::vector<Lunchmate>& debt_arr, Operation& oprtn)
-//{
-//}

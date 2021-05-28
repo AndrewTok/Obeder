@@ -1,7 +1,7 @@
 #include "data_proccesing.h"
 
 
-std::vector<std::string> split_string(const std::string& str, const std::string split_symbols)
+std::vector<std::string> split_string(const std::string& str, const std::string& split_symbols)
 {
 	std::string word;
 	std::vector<std::string> words = {};
@@ -19,13 +19,13 @@ std::vector<std::string> split_string(const std::string& str, const std::string 
 	return words;
 }
 
-Note convert_line(const std::string& line)
+file_line convert_line(const std::string& line)
 {
-	Note note;
+	file_line note;
 	std::vector<std::string> words = split_string(line, " \t");
-	note.ts = convert_str_to_time(words[0]);
-	note.name = words[1];
-	note.sum = stol(words[2]);
+	note.ts = convert_str_to_time(words.at(0));
+	note.name = words.at(1);
+	note.sum = stol(words.at(2));
 	return note;
 }
 
@@ -34,8 +34,8 @@ std::map<time_t, Operation> get_operation_map(std::istream& input)
 	std::string line;
 	//std::vector<std::string> words_in_line;
 	std::map<time_t, Operation> oper_map;
-	Operation curr_oper;
-	Note curr_note;
+	//Operation curr_oper;
+	file_line curr_note;
 	while (std::getline(input, line))
 	{
 		try
@@ -46,8 +46,9 @@ std::map<time_t, Operation> get_operation_map(std::istream& input)
 		{
 			return std::map<time_t, Operation>();
 		}
-		curr_oper = { curr_note.name, curr_note.sum };
-		oper_map[curr_note.ts] = curr_oper;
+		Operation curr_oper = { curr_note.name, curr_note.sum };
+		std::pair<time_t, Operation> curr_pair(curr_note.ts, curr_oper);
+		oper_map.insert(curr_pair);
 	}
 	return oper_map;
 }
