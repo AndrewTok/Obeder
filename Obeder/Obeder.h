@@ -49,20 +49,23 @@ public:
 	Obeder() = default;
 	~Obeder() = default;
 
-	std::vector<Recomendation> get_recomendation(const std::map<time_t, Operation>& notes, time_t begin, time_t end);
+	static std::vector<Recomendation> get_recomendation(const std::map<time_t, Operation>& notes, time_t begin, time_t end);
 
 
 private:
 
 	struct Lunchmate // вспомогательная структура для массива должников и кредиторов
 	{
+
+		static bool is_smaller(const Lunchmate& lhs, const Lunchmate& rhs);
+
 		std::string name; // person's id
 		//int sum; // how much money mate has to receive or pay (negative) 
 		int total_pay_sum; // how much money mate has to receive or pay (negative) 
 	};
 
 private:
-	struct lunchmates_with_map // вспомогательная промежуточная структура. Через нее создается массив должников и кредиторов. 
+	struct lunchmates // вспомогательная промежуточная структура. Через нее создается массив должников и кредиторов. lunchmates lunchmates_with_map
 	{
 		// define func in another file
 		void insert(const Operation& operation);
@@ -72,18 +75,26 @@ private:
 		void insert_or_update(const Operation& operation);
 
 		std::vector<Lunchmate> get_lunchmates() const;
+
+		void sort(bool cmp(const Lunchmate& lhs, const Lunchmate& rhs));
+
+		bool is_empty() const;
+
+		size_t size() const;
+
+		Lunchmate& operator[](size_t index);
+
 	private:
-		std::vector<Lunchmate> lunchmates; // массив должников и кредиторов was debt_arr
+		std::vector<Lunchmate> lunchmates_arr; // массив должников и кредиторов was debt_arr
 		std::unordered_map<std::string, size_t> name_index_table;
 		// здесь хранится индекс Lunchmate'a в массиве debt_arr по имени. Нужен, чтобы ускорить вставку в debt_arr
 	};
 
-	std::vector<Lunchmate> get_lunchmates(const std::map<time_t, Operation>& parsed_file, time_t begin, time_t end); // получить массив должников и кредиторов
+	static lunchmates get_lunchmates(const std::map<time_t, Operation>& parsed_file, time_t begin, time_t end); // получить массив должников и кредиторов std::vector<Lunchmate>
 
-	void process_operation(lunchmates_with_map& mapped_lunchmates, const Operation& operation); // обработать очередную операцию во входных данных и отредактировать debt_arr (debts)
+	static void process_operation(lunchmates& mapped_lunchmates, const Operation& operation); // обработать очередную операцию во входных данных и отредактировать debt_arr (debts)
 
-	Recomendation process_debtor_and_creditor(Lunchmate& debtor, size_t& debtor_index, Lunchmate& creditor, size_t& creditor_index);
-
+	static Recomendation process_debtor_and_creditor(Lunchmate& debtor, size_t& debtor_index, Lunchmate& creditor, size_t& creditor_index);
 
 };
 

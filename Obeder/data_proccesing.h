@@ -7,7 +7,7 @@
 
 #include "Obeder.h"
 
-struct file_line
+struct input_note final
 {
 	time_t ts; // timestamp of the operation
 	std::string name; // person's id
@@ -16,7 +16,7 @@ struct file_line
 
 std::vector<std::string> split_string(const std::string& str, const std::string& split_symbols);
 
-file_line convert_line(const std::string& line);
+input_note convert_line(const std::string& line);
 
 std::map<time_t, Operation> get_operation_map(std::istream& input);
 

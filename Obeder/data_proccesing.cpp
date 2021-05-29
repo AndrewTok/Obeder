@@ -19,9 +19,9 @@ std::vector<std::string> split_string(const std::string& str, const std::string&
 	return words;
 }
 
-file_line convert_line(const std::string& line)
+input_note convert_line(const std::string& line)
 {
-	file_line note;
+	input_note note;
 	std::vector<std::string> words = split_string(line, " \t");
 	note.ts = convert_str_to_time(words.at(0));
 	note.name = words.at(1);
@@ -35,7 +35,7 @@ std::map<time_t, Operation> get_operation_map(std::istream& input)
 	//std::vector<std::string> words_in_line;
 	std::map<time_t, Operation> oper_map;
 	//Operation curr_oper;
-	file_line curr_note;
+	input_note curr_note;
 	while (std::getline(input, line))
 	{
 		try

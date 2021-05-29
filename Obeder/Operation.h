@@ -1,9 +1,10 @@
 #pragma once
 #include <string>
-struct Operation
+struct Operation final
 {
-	Operation(std::string name, int pay_sum);
-	std::string get_name() const;
+	Operation(const std::string& name, int pay_sum);
+	Operation(const Operation& oper);
+	const std::string& get_name() const;
 	int get_pay_sum() const;
 private:
 	std::string name; // person's id

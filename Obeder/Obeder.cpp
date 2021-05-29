@@ -7,13 +7,13 @@
 std::vector<Recomendation> Obeder::get_recomendation(const std::map<time_t, Operation>& notes, time_t begin, time_t end)
 {
 	std::vector<Recomendation> recomendations = {};
-	std::vector<Lunchmate> lunchmates = get_lunchmates(notes, begin, end);
-	if (lunchmates.empty())
+	lunchmates lunchmates = get_lunchmates(notes, begin, end);
+	if (lunchmates.is_empty())
 	{
 		return std::vector<Recomendation>();
 	}
 	size_t debtor_index = 0, creditor_index = (lunchmates.size() - 1); // идем с двух концов отсортированного массива
-	while (debtor_index < creditor_index)
+	while (debtor_index <= creditor_index)
 	{
 		Lunchmate& curr_debtor = lunchmates[debtor_index];
 		Lunchmate& curr_creditor = lunchmates[creditor_index];
@@ -22,42 +22,45 @@ std::vector<Recomendation> Obeder::get_recomendation(const std::map<time_t, Oper
 			return std::vector<Recomendation>();
 		}
 		Recomendation curr_recom = process_debtor_and_creditor(curr_debtor, debtor_index, curr_creditor, creditor_index);
-		recomendations.insert(recomendations.end(), curr_recom);
-
+		if (curr_recom.get_debt_sum() != 0)
+		{
+			recomendations.insert(recomendations.end(), curr_recom);
+		}
 	}
 	return recomendations;
 }
 
 
 
-std::vector<Obeder::Lunchmate> Obeder::get_lunchmates(const std::map<time_t, Operation>& notes, time_t begin, time_t end)
+Obeder::lunchmates Obeder::get_lunchmates(const std::map<time_t, Operation>& notes, time_t begin, time_t end)
 {
-	lunchmates_with_map debts = {};
+	lunchmates lmates;
 	if (begin > end)
 	{
-		return std::vector<Lunchmate>();
+		return lmates;
 	}
 	for (auto& [time_st, operation] : notes)
 
 	{
 		if (time_st > end)
 		{
-			return std::vector<Lunchmate>();
+			break;
 		}
 		if (time_st >= begin)
 		{
-			process_operation(debts, operation);
+			process_operation(lmates, operation);
 		}
 	}
-	std::vector<Lunchmate> debt_arr = debts.get_lunchmates();
-	std::sort(debt_arr.begin(), debt_arr.end(), [](const Lunchmate& lhs, const Lunchmate& rhs) {
-		return lhs.total_pay_sum < rhs.total_pay_sum; });
-	return debt_arr;
+	//std::vector<Lunchmate> debt_arr = debts.get_lunchmates();
+	//std::sort(debt_arr.begin(), debt_arr.end(), [](const Lunchmate& lhs, const Lunchmate& rhs) {
+	//	return lhs.total_pay_sum < rhs.total_pay_sum; });
+	lmates.sort(Lunchmate::is_smaller);
+	return lmates;
 }
 
 
 
-void Obeder::process_operation(lunchmates_with_map& mapped_lunchmates, const Operation& operation)
+void Obeder::process_operation(lunchmates& mapped_lunchmates, const Operation& operation)
 {
 	mapped_lunchmates.insert_or_update(operation);
 }
@@ -81,22 +84,22 @@ Recomendation Obeder::process_debtor_and_creditor(Lunchmate& debtor, size_t& deb
 	return recom;
 }
 
-void Obeder::lunchmates_with_map::insert(const Operation& operation)
+void Obeder::lunchmates::insert(const Operation& operation)
 {
 	size_t index;
 	Lunchmate mate = { operation.get_name(), operation.get_pay_sum() };
-	index = lunchmates.size();
-	lunchmates.insert(lunchmates.end(), mate);
+	index = lunchmates_arr.size();
+	lunchmates_arr.insert(lunchmates_arr.end(), mate);
 	name_index_table[mate.name] = index;
 }
 
-void Obeder::lunchmates_with_map::update(const Operation& operation)
+void Obeder::lunchmates::update(const Operation& operation)
 {
 	size_t index = name_index_table[operation.get_name()];
-	lunchmates[index].total_pay_sum += operation.get_pay_sum();
+	lunchmates_arr[index].total_pay_sum += operation.get_pay_sum();
 }
 
-void Obeder::lunchmates_with_map::insert_or_update(const Operation& operation)
+void Obeder::lunchmates::insert_or_update(const Operation& operation)
 {
 	if (name_index_table.find(operation.get_name()) != name_index_table.end())
 	{
@@ -108,8 +111,32 @@ void Obeder::lunchmates_with_map::insert_or_update(const Operation& operation)
 	}
 }
 
-std::vector<Obeder::Lunchmate> Obeder::lunchmates_with_map::get_lunchmates() const
+std::vector<Obeder::Lunchmate> Obeder::lunchmates::get_lunchmates() const
 {
-	return lunchmates;
+	return lunchmates_arr;
 }
 
+void Obeder::lunchmates::sort(bool cmp(const Lunchmate& lhs, const Lunchmate& rhs))
+{
+	std::sort(lunchmates_arr.begin(), lunchmates_arr.end(), cmp);
+}
+
+bool Obeder::lunchmates::is_empty() const
+{
+	return lunchmates_arr.empty();
+}
+
+size_t Obeder::lunchmates::size() const
+{
+	return lunchmates_arr.size();
+}
+
+Obeder::Lunchmate& Obeder::lunchmates::operator[](size_t index)
+{
+	return lunchmates_arr.at(index);
+}
+
+bool Obeder::Lunchmate::is_smaller(const Lunchmate& lhs, const Lunchmate& rhs)
+{
+	return lhs.total_pay_sum < rhs.total_pay_sum;
+}

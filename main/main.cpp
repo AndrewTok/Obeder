@@ -1,5 +1,7 @@
 #include "Obeder.h"
 #include "data_proccesing.h"
+#include "Recomendation.h"
+#include "Operation.h"
 
 #include <iostream>
 #include <fstream>
@@ -11,14 +13,14 @@ int main()
 	ifstream inp("input.txt");
 	stringstream out;
 
-	Obeder ob;
-
 	map<time_t, Operation> oper_map = get_operation_map(inp);
 
-	std::vector<Recomendation> recom = ob.get_recomendation(oper_map, 0, 35);
+	std::vector<Recomendation> recom = Obeder::get_recomendation(oper_map, 0, 35);
 
 	for (auto& rec : recom)
 	{
+		//std::string d_name = rec.get_debtor_name();
+		//std::string c_name = rec.get_deb_name();
 		out << rec.get_debtor_name() << " -> " << rec.get_creditor_name() << " " << rec.get_debt_sum() << "  kopecks " << std::endl;
 	}
 
