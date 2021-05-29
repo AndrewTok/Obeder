@@ -8,6 +8,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Obeder_tests", "Obeder_tests\Obeder_tests.vcxproj", "{1C5B4E1B-1129-4C51-9F31-33E0EACCE5A0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "main", "main\main.vcxproj", "{561DECE6-0A5F-4BE3-8556-AD3D0E8FBA7D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{01A799E1-1C89-410B-86FC-0C2A8ACF3D47} = {01A799E1-1C89-410B-86FC-0C2A8ACF3D47}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
